@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --no-git)",
+      "Read(//c/Users/USER/Desktop/Projects/**)",
+      "Bash(rm -rf Dashboard)",
+      "Bash(npx create-next-app@latest dashboard --typescript --tailwind --eslint --app --no-git --skip-git)",
+      "Bash(cd /tmp)",
+      "Bash(npx create-next-app@latest executivedash --typescript --tailwind --eslint --app --no-git)",
+      "Bash(npm list:*)",
+      "Bash(npm install:*)",
+      "Bash(ls -la /c/Users/USER/Desktop/Projects/Dashboard/package*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npm run:*)",
+      "Bash(npx prisma:*)",
+      "Bash(git init:*)",
+      "Bash(git config:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

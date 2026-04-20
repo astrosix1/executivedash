@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  emailVerified DateTime?
+  password_hash String?
+  name          String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  sessions      Session[]
+  integrations  Integration[]
+  dashboards    Dashboard[]
+  alerts        Alert[]
+
+  @@index([email])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Integration {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            String   // "stripe", "salesforce", etc.
+  apiKeyEncrypted String
+  connectedAt     DateTime @default(now())
+  lastSyncedAt    DateTime?
+  syncStatus      String   @default("idle") // "idle", "syncing", "error"
+  syncError       String?
+
+  metricCache MetricCache[]
+
+  @@unique([userId, type])
+  @@index([userId])
+  @@index([syncStatus])
+}
+
+model MetricCache {
+  id            String   @id @default(cuid())
+  integrationId String
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  metricName    String   // "mrr", "churn_rate", "customer_count", "top_customers"
+  metricValue   Json
+  timestamp     DateTime @default(now())
+
+  @@index([integrationId, metricName])
+  @@index([timestamp])
+}
+
+model Dashboard {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  templateType String?  // "revenue_overview", "customer_health", null = custom
+  layout       Json     // Array of widget configurations
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  isPublic     Boolean  @default(false)
+
+  @@index([userId])
+}
+
+model Alert {
+  id            String  @id @default(cuid())
+  userId        String
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  integrationId String?
+  metricName    String  // "mrr", "churn_rate"
+  condition     String  // "drop_5_percent", "spike_10_percent"
+  threshold     Float?
+  enabled       Boolean @default(true)
+  createdAt     DateTime @default(now())
+
+  @@index([userId, metricName])
+}
